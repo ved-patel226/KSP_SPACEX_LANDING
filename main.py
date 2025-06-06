@@ -1,6 +1,6 @@
 import krpc
 from common import Telemetry, print_telemetry
-from land import LandingSuicideBurn
+from spacex import LandingSuicideBurn
 
 
 conn = krpc.connect()

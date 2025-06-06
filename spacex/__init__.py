@@ -1,0 +1,1 @@
+from .landing_burn import LandingSuicideBurn
