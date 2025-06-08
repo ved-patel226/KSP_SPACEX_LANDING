@@ -7,14 +7,14 @@ from rich.progress import Progress, TextColumn, BarColumn
 from rich.live import Live
 from rich.panel import Panel
 
-from common import Telemetry
+from common import Telemetry, closest_pass_to_latlon
 
 class LandingSuicideBurn:
-    def __init__(self, conn: Client, vessel: Vessel, telemetry: Telemetry):
+    def __init__(self, conn: Client, vessel: Vessel, telemetry: Telemetry, console: Console):
         self.conn = conn
         self.vessel = vessel
         self.telemetry = telemetry
-        self.console = Console()
+        self.console = console
 
     def setup_sas_retrograde(self):
         ap = self.vessel.auto_pilot
@@ -34,6 +34,11 @@ class LandingSuicideBurn:
         ap.reference_frame = self.vessel.orbital_reference_frame
 
     def wait_until_altitude(self, altitude: float, keep_sas_mode: bool = False):
+        lat_deg = 28.573469
+        lon_deg = -80.651070
+        
+        
+        
         flight = self.vessel.flight()
         start_altitude = flight.mean_altitude
         distance_to_go = max(start_altitude - altitude, 1)
@@ -52,6 +57,8 @@ class LandingSuicideBurn:
                 progress.update(task, completed=start_altitude - current)
                 time.sleep(1)
                 flight = self.vessel.flight()
+                
+                result = closest_pass_to_latlon(self.conn, self.vessel.orbit, self.console, lat_deg, lon_deg)
                 
                 if keep_sas_mode:
                     self.reset_sas_mode()
@@ -117,6 +124,6 @@ class LandingSuicideBurn:
 
     def run(self):
         self.setup_sas_retrograde()
-        self.wait_until_altitude(12_500, keep_sas_mode=True)
+        self.wait_until_altitude(10_000, keep_sas_mode=True)
         self.start_suicide_burn()
         self.console.print("[bold magenta]Suicide burn complete.[/bold magenta]")
